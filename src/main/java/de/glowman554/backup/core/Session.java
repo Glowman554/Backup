@@ -85,6 +85,18 @@ public class Session {
 
     public void copyChanges(IUserInterface user, File base, File target) {
         String[] paths = changedFiles.toArray(String[]::new);
+
+        long size = 0;
+        for (String path : paths) {
+            size += new File(base, path).length();
+        }
+        user.log("Size of changed files: " + FileUtil.formatSize(size));
+
+        long free = target.getFreeSpace();
+        if (size > free) {
+            throw new RuntimeException("Not enough space on target drive");
+        }
+
         threadedCopy(user, paths, base, target, false);
     }
 
@@ -115,6 +127,7 @@ public class Session {
 
     private void diffPreviousSession(IUserInterface user, HashMap<String, BackupFile> newFiles) {
         user.setState(IUserInterface.State.DIFFING);
+
 
         int deletions = 0;
         for (String path : newFiles.keySet()) {
