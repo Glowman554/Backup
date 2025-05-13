@@ -138,19 +138,27 @@ public class Session {
 
 
         int deletions = 0;
-        for (String path : newFiles.keySet()) {
+        for (String path : files.keySet().toArray(String[]::new)) {
             BackupFile newFile = newFiles.get(path);
-            BackupFile oldFile = files.get(path);
 
             if (newFile == null) {
                 // user.log("File " + path + " was deleted");
                 files.remove(path);
                 deletions++;
-            } else if (oldFile == null || oldFile.lastModified() != newFile.lastModified()) {
+            }
+        }
+        
+        for (String path : newFiles.keySet()) {
+            BackupFile newFile = newFiles.get(path);
+            BackupFile oldFile = files.get(path);
+
+            if (oldFile == null || oldFile.lastModified() != newFile.lastModified()) {
                 files.put(path, newFile);
                 changedFiles.add(path);
             }
         }
+
+
 
         user.log("Changed files: " + changedFiles.size());
         user.log("Deleted files: " + deletions);
