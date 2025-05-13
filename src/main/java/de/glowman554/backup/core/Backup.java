@@ -17,7 +17,7 @@ public class Backup {
         return config;
     }
 
-    public static void backup(IUserInterface user) throws IOException {
+    public static void backup(IUserInterface user, boolean compression) throws IOException {
         try {
             Config config = loadConfig();
 
@@ -29,7 +29,7 @@ public class Backup {
             Session session = store.loadLatestSession();
 
             session.startNewSession(user, directory);
-            session.copyChanges(user, directory, target);
+            session.copyChanges(user, directory, target, compression);
 
             store.persistSession(session);
 
@@ -41,7 +41,7 @@ public class Backup {
         }
     }
 
-    public static void restore(IUserInterface user) throws IOException {
+    public static void restore(IUserInterface user, boolean compression) throws IOException {
         try {
             Config config = loadConfig();
 
@@ -52,7 +52,7 @@ public class Backup {
 
             Session session = SessionStore.loadFromSessionFile(sessionFile);
 
-            session.restoreTo(user, directory, target);
+            session.restoreTo(user, directory, target, compression);
 
             user.setState(IUserInterface.State.DONE_RESTORE);
         } catch (Exception e) {

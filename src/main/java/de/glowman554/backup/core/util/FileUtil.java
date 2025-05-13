@@ -7,12 +7,40 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class FileUtil {
     public static void copyFile(File source, File target) throws IOException {
         try (FileInputStream sourceStream = new FileInputStream(source); FileOutputStream targetStream = new FileOutputStream(target)) {
             try (FileChannel sourceChannel = sourceStream.getChannel(); FileChannel targetChannel = targetStream.getChannel()) {
                 targetChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+            }
+        }
+    }
+
+    public static void copyAndCompressFile(File source, File target) throws IOException {
+        try (FileInputStream fis = new FileInputStream(source);
+             FileOutputStream fos = new FileOutputStream(target);
+             GZIPOutputStream gzipOut = new GZIPOutputStream(fos)) {
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                gzipOut.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+    public static void copyAndDecompressFile(File source, File target) throws IOException {
+        try (FileInputStream fis = new FileInputStream(source);
+             GZIPInputStream gzipIn = new GZIPInputStream(fis);
+             FileOutputStream fos = new FileOutputStream(target)) {
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = gzipIn.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
             }
         }
     }

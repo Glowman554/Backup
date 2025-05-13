@@ -39,7 +39,7 @@ public class Session {
         diffPreviousSession(user, newFiles);
     }
 
-    private void threadedCopy(IUserInterface user, String[] paths, File base, File target, boolean restore) {
+    private void threadedCopy(IUserInterface user, String[] paths, File base, File target, boolean restore, boolean compression) {
         user.setState(IUserInterface.State.COPYING);
 
         ThreadPool pool = new ThreadPool();
@@ -69,9 +69,17 @@ public class Session {
                 }
                 try {
                     if (restore) {
-                        FileUtil.copyFile(targetFile, sourceFile);
+                        if (compression) {
+                            FileUtil.copyAndDecompressFile(targetFile, sourceFile);
+                        } else {
+                            FileUtil.copyFile(targetFile, sourceFile);
+                        }
                     } else {
-                        FileUtil.copyFile(sourceFile, targetFile);
+                        if (compression) {
+                            FileUtil.copyAndCompressFile(sourceFile, targetFile);
+                        } else {
+                            FileUtil.copyFile(sourceFile, targetFile);
+                        }
                     }
                 } catch (IOException e) {
                     user.log("Failed to copy file: " + path);
@@ -83,7 +91,7 @@ public class Session {
         pool.stop();
     }
 
-    public void copyChanges(IUserInterface user, File base, File target) {
+    public void copyChanges(IUserInterface user, File base, File target, boolean compression) {
         String[] paths = changedFiles.toArray(String[]::new);
 
         long size = 0;
@@ -97,13 +105,13 @@ public class Session {
             throw new RuntimeException("Not enough space on target drive");
         }
 
-        threadedCopy(user, paths, base, target, false);
+        threadedCopy(user, paths, base, target, false, compression);
     }
 
-    public void restoreTo(IUserInterface user, File base, File target) {
+    public void restoreTo(IUserInterface user, File base, File target, boolean compression) {
         String[] paths = files.keySet().toArray(String[]::new);
         user.log("Restoring " + paths.length + " files");
-        threadedCopy(user, paths, base, target, true);
+        threadedCopy(user, paths, base, target, true, compression);
     }
 
 
