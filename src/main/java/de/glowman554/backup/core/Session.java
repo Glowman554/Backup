@@ -5,6 +5,7 @@ import net.shadew.json.JsonNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -27,13 +28,15 @@ public class Session {
         return session;
     }
 
-    public void startNewSession(IUserInterface user, File directory) {
+    public void startNewSession(IUserInterface user, File directory, String[] excludes) {
         timestamp = System.currentTimeMillis();
         user.log("Starting new session: " + timestamp);
 
         HashMap<String, BackupFile> newFiles = new HashMap<>();
+        HashSet<String> excludesSet = new HashSet<>();
+        Collections.addAll(excludesSet, excludes);
 
-        indexDirectory(user, directory, directory, newFiles);
+        indexDirectory(user, directory, directory, newFiles, excludesSet);
 
         changedFiles.clear();
         diffPreviousSession(user, newFiles);
@@ -115,15 +118,24 @@ public class Session {
     }
 
 
-    private void indexDirectory(IUserInterface user, File base, File directory, HashMap<String, BackupFile> output) {
+    private void indexDirectory(IUserInterface user, File base, File directory, HashMap<String, BackupFile> output, HashSet<String> excludes) {
         user.setState(IUserInterface.State.INDEXING);
 
 
-        for (File file : Objects.requireNonNull(directory.listFiles())) {
+        File[] dir = directory.listFiles();
+        if (dir == null) {
+            user.log("listFiles() returned null: " + directory.getAbsolutePath());
+            return;
+        }
+
+        for (File file : dir) {
             if (file.isDirectory()) {
                 // user.log("Indexing directory: " + file.getAbsolutePath());
-
-                indexDirectory(user, base, file, output);
+                if (excludes.contains(file.getAbsolutePath())) {
+                    user.log("Excluding: " + file.getAbsolutePath());
+                    continue;
+                }
+                indexDirectory(user, base, file, output, excludes);
             } else {
                 long lastModified = file.lastModified();
 

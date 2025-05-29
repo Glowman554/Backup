@@ -11,6 +11,9 @@ public class Config extends ConfigFile {
     @Saved
     public String targetPath = "<change me>";
 
+    @Saved
+    public String[] excludes = new String[]{};
+
     public Config() {
         super(new File("backup.json"));
     }

@@ -28,7 +28,7 @@ public class Backup {
             SessionStore store = new SessionStore(new File(target, "sessions"));
             Session session = store.loadLatestSession();
 
-            session.startNewSession(user, directory);
+            session.startNewSession(user, directory, config.excludes);
             session.copyChanges(user, directory, target, compression);
 
             store.persistSession(session);
