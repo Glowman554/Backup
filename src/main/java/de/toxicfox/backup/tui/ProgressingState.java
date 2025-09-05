@@ -1,4 +1,4 @@
-package de.glowman554.backup.tui;
+package de.toxicfox.backup.tui;
 
 public abstract class ProgressingState extends AbstractState {
     public abstract void setProgress(int progress);

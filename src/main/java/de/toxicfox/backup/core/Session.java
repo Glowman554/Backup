@@ -1,6 +1,6 @@
-package de.glowman554.backup.core;
+package de.toxicfox.backup.core;
 
-import de.glowman554.backup.core.util.FileUtil;
+import de.toxicfox.backup.core.util.FileUtil;
 import net.shadew.json.JsonNode;
 
 import java.io.File;

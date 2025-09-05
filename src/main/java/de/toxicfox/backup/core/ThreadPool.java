@@ -1,4 +1,4 @@
-package de.glowman554.backup.core;
+package de.toxicfox.backup.core;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;

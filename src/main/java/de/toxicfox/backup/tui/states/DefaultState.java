@@ -1,7 +1,7 @@
-package de.glowman554.backup.tui.states;
+package de.toxicfox.backup.tui.states;
 
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
-import de.glowman554.backup.tui.AbstractState;
+import de.toxicfox.backup.tui.AbstractState;
 
 public class DefaultState extends AbstractState {
     @Override

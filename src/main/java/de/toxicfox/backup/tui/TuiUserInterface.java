@@ -1,4 +1,4 @@
-package de.glowman554.backup.tui;
+package de.toxicfox.backup.tui;
 
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
@@ -9,7 +9,7 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
-import de.glowman554.backup.core.IUserInterface;
+import de.toxicfox.backup.core.IUserInterface;
 
 import java.io.File;
 import java.io.IOException;

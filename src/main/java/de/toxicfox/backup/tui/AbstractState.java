@@ -1,4 +1,4 @@
-package de.glowman554.backup.tui;
+package de.toxicfox.backup.tui;
 
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 

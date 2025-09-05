@@ -1,8 +1,8 @@
-package de.glowman554.backup.tui;
+package de.toxicfox.backup.tui;
 
-import de.glowman554.backup.tui.states.CopyingWindow;
-import de.glowman554.backup.tui.states.DefaultState;
-import de.glowman554.backup.tui.states.IndexingWindow;
+import de.toxicfox.backup.tui.states.CopyingWindow;
+import de.toxicfox.backup.tui.states.DefaultState;
+import de.toxicfox.backup.tui.states.IndexingWindow;
 
 public enum StateInstance {
     DEFAULT(new DefaultState()),

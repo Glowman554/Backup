@@ -1,7 +1,7 @@
-package de.glowman554.backup.core;
+package de.toxicfox.backup.core;
 
-import de.glowman554.config.ConfigFile;
-import de.glowman554.config.auto.Saved;
+import de.toxicfox.config.ConfigFile;
+import de.toxicfox.config.auto.Saved;
 
 import java.io.File;
 

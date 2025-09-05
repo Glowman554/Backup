@@ -1,4 +1,4 @@
-package de.glowman554.backup.core.util;
+package de.toxicfox.backup.core.util;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
-package de.glowman554.backup.tui.states;
+package de.toxicfox.backup.tui.states;
 
 import com.googlecode.lanterna.gui2.*;
-import de.glowman554.backup.tui.ProgressingState;
+import de.toxicfox.backup.tui.ProgressingState;
 
 import java.util.List;
 

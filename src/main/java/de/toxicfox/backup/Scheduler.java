@@ -1,4 +1,4 @@
-package de.glowman554.backup;
+package de.toxicfox.backup;
 
 import java.util.Timer;
 import java.util.TimerTask;

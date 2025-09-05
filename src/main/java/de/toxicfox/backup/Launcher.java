@@ -1,12 +1,12 @@
-package de.glowman554.backup;
+package de.toxicfox.backup;
 
-import de.glowman554.backup.cli.CliUserInterface;
-import de.glowman554.backup.core.Backup;
-import de.glowman554.backup.core.IUserInterface;
-import de.glowman554.backup.core.util.FileModificationCompression;
-import de.glowman554.backup.core.util.FileModificationEncryption;
-import de.glowman554.backup.core.util.FileUtil;
-import de.glowman554.backup.tui.TuiUserInterface;
+import de.toxicfox.backup.cli.CliUserInterface;
+import de.toxicfox.backup.core.Backup;
+import de.toxicfox.backup.core.IUserInterface;
+import de.toxicfox.backup.core.util.FileModificationCompression;
+import de.toxicfox.backup.core.util.FileModificationEncryption;
+import de.toxicfox.backup.core.util.FileUtil;
+import de.toxicfox.backup.tui.TuiUserInterface;
 
 import java.io.File;
 import java.io.IOException;

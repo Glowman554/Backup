@@ -1,6 +1,6 @@
-package de.glowman554.backup.cli;
+package de.toxicfox.backup.cli;
 
-import de.glowman554.backup.core.IUserInterface;
+import de.toxicfox.backup.core.IUserInterface;
 
 import java.io.File;
 import java.util.Scanner;

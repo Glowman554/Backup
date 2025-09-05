@@ -1,6 +1,6 @@
-package de.glowman554.backup.core.util;
+package de.toxicfox.backup.core.util;
 
-import de.glowman554.backup.core.IUserInterface;
+import de.toxicfox.backup.core.IUserInterface;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;

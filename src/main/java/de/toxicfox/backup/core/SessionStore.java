@@ -1,4 +1,4 @@
-package de.glowman554.backup.core;
+package de.toxicfox.backup.core;
 
 import net.shadew.json.Json;
 import net.shadew.json.JsonNode;
