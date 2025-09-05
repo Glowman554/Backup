@@ -1,81 +1,43 @@
 package de.glowman554.backup.core.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.io.*;
+import java.util.ArrayList;
 
 public class FileUtil {
-    public static void copyFile(File source, File target) throws IOException {
-        try (FileInputStream sourceStream = new FileInputStream(source); FileOutputStream targetStream = new FileOutputStream(target)) {
-            try (FileChannel sourceChannel = sourceStream.getChannel(); FileChannel targetChannel = targetStream.getChannel()) {
-                targetChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+    private final ArrayList<FileModification> modifications = new ArrayList<>();
+
+    public void copyBackup(File source, File target) throws IOException {
+        try (InputStream fis = new FileInputStream(source);
+             OutputStream fos = new FileOutputStream(target)) {
+
+            OutputStream modifiedOut = fos;
+            for (FileModification mod : modifications) {
+                modifiedOut = mod.apply(modifiedOut);
             }
+
+            fis.transferTo(modifiedOut);
+
+            modifiedOut.close();
         }
     }
 
-    public static void copyAndCompressFile(File source, File target) throws IOException {
-        try (FileInputStream fis = new FileInputStream(source);
-             FileOutputStream fos = new FileOutputStream(target);
-             GZIPOutputStream gzipOut = new GZIPOutputStream(fos)) {
+    public void copyRestore(File source, File target) throws IOException {
+        try (InputStream fis = new FileInputStream(source);
+             OutputStream fos = new FileOutputStream(target)) {
 
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                gzipOut.write(buffer, 0, bytesRead);
+            InputStream modifiedIn = fis;
+            for (FileModification mod : modifications) {
+                modifiedIn = mod.unapply(modifiedIn);
             }
+
+            modifiedIn.transferTo(fos);
+
+            modifiedIn.close();
         }
     }
 
-    public static void copyAndDecompressFile(File source, File target) throws IOException {
-        try (FileInputStream fis = new FileInputStream(source);
-             GZIPInputStream gzipIn = new GZIPInputStream(fis);
-             FileOutputStream fos = new FileOutputStream(target)) {
-
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = gzipIn.read(buffer)) != -1) {
-                fos.write(buffer, 0, bytesRead);
-            }
-        }
-    }
-
-    /*
-    public static long readLastModifiedTime (File file) {
-        try {
-            BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-            return attr.lastModifiedTime().toMillis();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    */
-
-    public static String calculateHash(File file) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            try (FileInputStream fis = new FileInputStream(file)) {
-                byte[] byteArray = new byte[1024];
-                int bytesCount;
-                while ((bytesCount = fis.read(byteArray)) != -1) {
-                    digest.update(byteArray, 0, bytesCount);
-                }
-            }
-
-            byte[] bytes = digest.digest();
-            StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void addModification(FileModification modification) {
+        modifications.add(modification);
     }
 
     public static String formatSize(long size) {
@@ -88,5 +50,12 @@ public class FileUtil {
         } else {
             return size / 1024 / 1024 / 1024 + " GB";
         }
+    }
+
+
+    public static interface FileModification {
+        OutputStream apply(OutputStream stream) throws IOException;
+
+        InputStream unapply(InputStream stream) throws IOException;
     }
 }

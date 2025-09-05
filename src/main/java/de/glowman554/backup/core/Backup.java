@@ -1,6 +1,6 @@
 package de.glowman554.backup.core;
 
-import de.glowman554.backup.tui.TuiUserInterface;
+import de.glowman554.backup.core.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class Backup {
         return config;
     }
 
-    public static void backup(IUserInterface user, boolean compression) throws IOException {
+    public static void backup(IUserInterface user, FileUtil fileUtil) throws IOException {
         try {
             Config config = loadConfig();
 
@@ -29,7 +29,7 @@ public class Backup {
             Session session = store.loadLatestSession();
 
             session.startNewSession(user, directory, config.excludes);
-            session.copyChanges(user, directory, target, compression);
+            session.copyChanges(user, directory, target, fileUtil);
 
             store.persistSession(session);
 
@@ -41,7 +41,7 @@ public class Backup {
         }
     }
 
-    public static void restore(IUserInterface user, boolean compression) throws IOException {
+    public static void restore(IUserInterface user, FileUtil fileUtil) throws IOException {
         try {
             Config config = loadConfig();
 
@@ -52,7 +52,7 @@ public class Backup {
 
             Session session = SessionStore.loadFromSessionFile(sessionFile);
 
-            session.restoreTo(user, directory, target, compression);
+            session.restoreTo(user, directory, target, fileUtil);
 
             user.setState(IUserInterface.State.DONE_RESTORE);
         } catch (Exception e) {

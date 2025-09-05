@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 
 public class Session {
     private final HashSet<String> changedFiles = new HashSet<>();
@@ -42,7 +41,7 @@ public class Session {
         diffPreviousSession(user, newFiles);
     }
 
-    private void threadedCopy(IUserInterface user, String[] paths, File base, File target, boolean restore, boolean compression) {
+    private void threadedCopy(IUserInterface user, String[] paths, File base, File target, boolean restore, FileUtil fileUtil) {
         user.setState(IUserInterface.State.COPYING);
 
         ThreadPool pool = new ThreadPool();
@@ -72,19 +71,12 @@ public class Session {
                 }
                 try {
                     if (restore) {
-                        if (compression) {
-                            FileUtil.copyAndDecompressFile(targetFile, sourceFile);
-                        } else {
-                            FileUtil.copyFile(targetFile, sourceFile);
-                        }
+                        fileUtil.copyRestore(targetFile, sourceFile);
                     } else {
-                        if (compression) {
-                            FileUtil.copyAndCompressFile(sourceFile, targetFile);
-                        } else {
-                            FileUtil.copyFile(sourceFile, targetFile);
-                        }
+                        fileUtil.copyBackup(sourceFile, targetFile);
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                     user.log("Failed to copy file: " + path);
                     files.remove(path);
                 }
@@ -94,7 +86,7 @@ public class Session {
         pool.stop();
     }
 
-    public void copyChanges(IUserInterface user, File base, File target, boolean compression) {
+    public void copyChanges(IUserInterface user, File base, File target, FileUtil fileUtil) {
         String[] paths = changedFiles.toArray(String[]::new);
 
         long size = 0;
@@ -108,13 +100,13 @@ public class Session {
             throw new RuntimeException("Not enough space on target drive");
         }
 
-        threadedCopy(user, paths, base, target, false, compression);
+        threadedCopy(user, paths, base, target, false, fileUtil);
     }
 
-    public void restoreTo(IUserInterface user, File base, File target, boolean compression) {
+    public void restoreTo(IUserInterface user, File base, File target, FileUtil fileUtil) {
         String[] paths = files.keySet().toArray(String[]::new);
         user.log("Restoring " + paths.length + " files");
-        threadedCopy(user, paths, base, target, true, compression);
+        threadedCopy(user, paths, base, target, true, fileUtil);
     }
 
 
