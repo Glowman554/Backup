@@ -2,8 +2,11 @@ package de.toxicfox.backup.core;
 
 import de.toxicfox.backup.core.util.FileUtil;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 public class Backup {
     private static Config loadConfig() {
@@ -20,7 +23,7 @@ public class Backup {
     public static void backup(IUserInterface user, FileUtil fileUtil) throws IOException {
         try {
             Config config = loadConfig();
-
+            executeCommand(user, config.hooks.preBackup);
 
             File directory = new File(config.sourcePath);
             File target = new File(config.targetPath);
@@ -32,6 +35,7 @@ public class Backup {
             session.copyChanges(user, directory, target, fileUtil);
 
             store.persistSession(session);
+            executeCommand(user, config.hooks.postBackup);
 
             user.setState(IUserInterface.State.DONE_BACKUP);
         } catch (Exception e) {
@@ -44,6 +48,7 @@ public class Backup {
     public static void restore(IUserInterface user, FileUtil fileUtil) throws IOException {
         try {
             Config config = loadConfig();
+            executeCommand(user, config.hooks.preRestore);
 
             File directory = new File(config.sourcePath);
             File target = new File(config.targetPath);
@@ -53,12 +58,40 @@ public class Backup {
             Session session = SessionStore.loadFromSessionFile(sessionFile);
 
             session.restoreTo(user, directory, target, fileUtil);
+            executeCommand(user, config.hooks.preRestore);
 
             user.setState(IUserInterface.State.DONE_RESTORE);
         } catch (Exception e) {
             user.error(e);
 
             System.exit(1);
+        }
+    }
+
+     private static void executeCommand(IUserInterface user, String command) throws IOException {
+        if (command == null) {
+            return;
+        }
+
+        user.log("Executing command '" + command + "'");
+        try {
+            StringTokenizer st = new StringTokenizer(command);
+            String[] cmdarray = new String[st.countTokens()];
+            for (int i = 0; st.hasMoreTokens(); i++) {
+                cmdarray[i] = st.nextToken();
+            }
+
+            Process process = new ProcessBuilder(cmdarray).start();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            String output;
+            while ((output = bufferedReader.readLine()) != null) {
+                user.log(output);
+            }
+        } catch (Exception e) {
+            throw new IOException("Error while executing command: " + command);
         }
     }
 }
