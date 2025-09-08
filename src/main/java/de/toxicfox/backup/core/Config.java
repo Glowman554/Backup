@@ -16,7 +16,7 @@ public class Config extends ConfigFile {
     @Saved
     public String[] excludes = new String[]{};
 
-    @Saved(remap = Savable.class)
+    @Saved(remap = Savable.class, optional = true)
     public Hooks hooks = new Hooks();
 
 

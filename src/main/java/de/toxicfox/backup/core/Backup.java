@@ -75,21 +75,21 @@ public class Backup {
 
         user.log("Executing command '" + command + "'");
         try {
-            StringTokenizer st = new StringTokenizer(command);
-            String[] cmdarray = new String[st.countTokens()];
-            for (int i = 0; st.hasMoreTokens(); i++) {
-                cmdarray[i] = st.nextToken();
+            String[] cmd = {"/bin/bash", "-c", command};
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+
+            Process process = pb.start();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    user.log(line);
+                }
             }
 
-            Process process = new ProcessBuilder(cmdarray).start();
-
-            InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-            String output;
-            while ((output = bufferedReader.readLine()) != null) {
-                user.log(output);
-            }
+            int exitCode = process.waitFor();
+            user.log("Exit code: " + exitCode);
         } catch (Exception e) {
             throw new IOException("Error while executing command: " + command);
         }
