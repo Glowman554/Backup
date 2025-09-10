@@ -60,6 +60,10 @@ public class ArgumentParser {
                 this.nodes.remove(node);
 
                 if (node.value == null) {
+                    if (defaultValue != null) {
+                        return defaultValue;
+                    }
+                    
                     throw new IllegalArgumentException("Missing value for argument: " + node.name);
                 }
 

@@ -10,8 +10,11 @@ import de.toxicfox.backup.tui.TuiUserInterface;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Launcher {
+    private static final Pattern scheduledOptions = Pattern.compile("(\\d{2}):(\\d{2})/(\\d+)");
 
     public static void main(String[] args) throws Exception {
         ArgumentParser parser = new ArgumentParser(args, new String[]{"--interface", "--scheduled", "--restore", "--compression", "--encryption"});
@@ -38,8 +41,19 @@ public class Launcher {
             Backup.restore(user, fileUtil);
         } else {
             if (parser.isOption("--scheduled")) {
-                System.out.println("Scheduled backup started");
-                Scheduler.every(24, () -> {
+                String options = parser.consumeOption("--scheduled", "06:30/24");
+                Matcher matcher = scheduledOptions.matcher(options);
+
+                if (!matcher.matches()) {
+                    throw new IllegalArgumentException("Invalid syntax for --scheduled");
+                }
+                
+                int hours = Integer.parseInt(matcher.group(1));
+                int minutes = Integer.parseInt(matcher.group(2));
+                int interval = Integer.parseInt(matcher.group(3));
+
+                user.log(String.format("Scheduled backup started (Starting at %d:%d running every %d hours)", hours, minutes, interval));
+                Scheduler.every(hours, minutes, interval, () -> {
                     try {
                         Backup.backup(user, fileUtil);
                     } catch (IOException e) {

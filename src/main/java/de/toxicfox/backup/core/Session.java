@@ -76,8 +76,9 @@ public class Session {
                         fileUtil.copyBackup(sourceFile, targetFile);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
                     user.log("Failed to copy file: " + path);
+                    exception(user, e);
+                    
                     files.remove(path);
                 }
             });
@@ -166,6 +167,13 @@ public class Session {
 
         user.log("Changed files: " + changedFiles.size());
         user.log("Deleted files: " + deletions);
+    }
+
+    private void exception(IUserInterface user, Exception e) {
+        user.log(String.format("Exception: %s", e.getMessage()));
+        for (StackTraceElement element : e.getStackTrace()) {
+            user.log(String.format("    at %s.%s(%s:%s)", element.getClassName(), element.getMethodName(), element.getFileName(), element.getLineNumber()));
+        }
     }
 
     public JsonNode toJSON() {

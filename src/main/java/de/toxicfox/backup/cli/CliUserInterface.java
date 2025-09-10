@@ -10,18 +10,19 @@ public class CliUserInterface implements IUserInterface {
 
     @Override
     public void log(String message) {
-        System.out.println(message);
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        System.out.printf("[%s::%s at %s:%s] %s\n", stackTraceElements[2].getClassName(), stackTraceElements[2].getMethodName(), stackTraceElements[2].getFileName(), stackTraceElements[2].getLineNumber(), message);
     }
 
     @Override
     public void setProgress(int progress) {
-        System.out.println(progress + "%");
+        log(progress + "%");
     }
 
     @Override
     public void setState(State state) {
         if (previousState != state) {
-            System.out.println("State: " + state);
+            log("State: " + state);
             previousState = state;
         }
     }

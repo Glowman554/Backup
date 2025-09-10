@@ -54,9 +54,11 @@ public class TuiUserInterface implements IUserInterface {
 
     @Override
     public void log(String message) {
-        // System.out.println(message);
-        debugWindow.log(message);
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String debugMessage = String.format("[%s::%s at %s:%s] %s", stackTraceElements[2].getClassName(), stackTraceElements[2].getMethodName(), stackTraceElements[2].getFileName(), stackTraceElements[2].getLineNumber(), message);
 
+        debugWindow.log(debugMessage);
+        
         safeUpdate();
     }
 
