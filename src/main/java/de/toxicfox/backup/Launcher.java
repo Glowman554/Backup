@@ -3,13 +3,13 @@ package de.toxicfox.backup;
 import de.toxicfox.backup.cli.CliUserInterface;
 import de.toxicfox.backup.core.Backup;
 import de.toxicfox.backup.core.IUserInterface;
+import de.toxicfox.backup.core.SessionResult;
 import de.toxicfox.backup.core.util.FileModificationCompression;
 import de.toxicfox.backup.core.util.FileModificationEncryption;
 import de.toxicfox.backup.core.util.FileUtil;
 import de.toxicfox.backup.tui.TuiUserInterface;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +17,7 @@ public class Launcher {
     private static final Pattern scheduledOptions = Pattern.compile("(\\d{2}):(\\d{2})/(\\d+)");
 
     public static void main(String[] args) throws Exception {
-        ArgumentParser parser = new ArgumentParser(args, new String[]{"--interface", "--scheduled", "--restore", "--compression", "--encryption"});
+        ArgumentParser parser = new ArgumentParser(args, new String[]{"--interface", "--scheduled", "--restore", "--compression", "--encryption", "--notify"});
 
         String interfaceType = parser.consumeOption("--interface", "tui");
         IUserInterface user = switch (interfaceType) {
@@ -37,6 +37,15 @@ public class Launcher {
             fileUtil.addModification(new FileModificationEncryption(new File(keyFile), user));
         }
 
+
+        // Needs to be final because of a lambda
+        final SMTP[] smtp = new SMTP[] { null };
+        if (parser.isOption("--notify")) {
+            smtp[0] = new SMTP(parser.consumeOption("--notify", null));
+            smtp[0].load();
+        }
+        
+
         if (parser.isOption("--restore")) {
             Backup.restore(user, fileUtil);
         } else {
@@ -54,14 +63,24 @@ public class Launcher {
 
                 user.log(String.format("Scheduled backup started (Starting at %d:%d running every %d hours)", hours, minutes, interval));
                 Scheduler.every(hours, minutes, interval, () -> {
-                    try {
-                        Backup.backup(user, fileUtil);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    startBackup(smtp[0], fileUtil, user);
                 });
             } else {
-                Backup.backup(user, fileUtil);
+                startBackup(smtp[0], fileUtil, user);
+            }
+        }
+    }
+
+    private static void startBackup(SMTP smtp, FileUtil fileUtil, IUserInterface user) {
+        try {
+            SessionResult result = Backup.backup(user, fileUtil);
+            if (smtp != null) {
+                smtp.notifySuccess(result);;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (smtp != null) {
+                smtp.notifyError(e);
             }
         }
     }

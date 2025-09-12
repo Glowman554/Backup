@@ -12,10 +12,12 @@ import java.util.HashSet;
 public class Session {
     private final HashSet<String> changedFiles = new HashSet<>();
     private final HashMap<String, BackupFile> files = new HashMap<>(); // needs to be persisted
+    private SessionResult result;
     private long timestamp;
 
     public Session() {
         timestamp = System.currentTimeMillis();
+        result = new SessionResult(timestamp);
     }
 
     public static Session fromJSON(JsonNode node) {
@@ -29,6 +31,8 @@ public class Session {
 
     public void startNewSession(IUserInterface user, File directory, String[] excludes) {
         timestamp = System.currentTimeMillis();
+        result = new SessionResult(timestamp);
+
         user.log("Starting new session: " + timestamp);
 
         HashMap<String, BackupFile> newFiles = new HashMap<>();
@@ -78,7 +82,8 @@ public class Session {
                 } catch (IOException e) {
                     user.log("Failed to copy file: " + path);
                     exception(user, e);
-                    
+
+                    result.addFailedFile(path);
                     files.remove(path);
                 }
             });
@@ -95,6 +100,7 @@ public class Session {
             size += new File(base, path).length();
         }
         user.log("Size of changed files: " + FileUtil.formatSize(size));
+        result.setChangedFilesSizeGB(FileUtil.formatSize(size));
 
         long free = target.getFreeSpace();
         if (size > free) {
@@ -167,6 +173,9 @@ public class Session {
 
         user.log("Changed files: " + changedFiles.size());
         user.log("Deleted files: " + deletions);
+
+        result.setChangedFiles(changedFiles.size());
+        result.setDeletions(deletions);
     }
 
     private void exception(IUserInterface user, Exception e) {
@@ -188,5 +197,9 @@ public class Session {
 
     public long getTimestamp() {
         return timestamp;
+    }
+    
+    public SessionResult getResult() {
+        return result;
     }
 }

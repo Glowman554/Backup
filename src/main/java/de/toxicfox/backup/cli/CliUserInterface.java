@@ -29,7 +29,7 @@ public class CliUserInterface implements IUserInterface {
 
     @Override
     public void error(Exception e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
     }
 
     @Override

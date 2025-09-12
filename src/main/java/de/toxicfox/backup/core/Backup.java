@@ -19,7 +19,7 @@ public class Backup {
         return config;
     }
 
-    public static void backup(IUserInterface user, FileUtil fileUtil) throws IOException {
+    public static SessionResult backup(IUserInterface user, FileUtil fileUtil) {
         try {
             Config config = loadConfig();
             executeCommand(user, config.hooks.preBackup);
@@ -37,11 +37,14 @@ public class Backup {
             executeCommand(user, config.hooks.postBackup);
 
             user.setState(IUserInterface.State.DONE_BACKUP);
+
+            return session.getResult();
         } catch (Exception e) {
             user.error(e);
-
-            System.exit(1);
         }
+
+        return null;
+
     }
 
     public static void restore(IUserInterface user, FileUtil fileUtil) throws IOException {
@@ -62,8 +65,6 @@ public class Backup {
             user.setState(IUserInterface.State.DONE_RESTORE);
         } catch (Exception e) {
             user.error(e);
-
-            System.exit(1);
         }
     }
 
@@ -89,6 +90,10 @@ public class Backup {
 
             int exitCode = process.waitFor();
             user.log("Exit code: " + exitCode);
+            
+            if (exitCode != 0) {
+                throw new RuntimeException("Command failed with exit code " + exitCode);
+            }
         } catch (Exception e) {
             throw new IOException("Error while executing command: " + command);
         }
